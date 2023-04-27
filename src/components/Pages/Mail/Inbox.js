@@ -1,28 +1,27 @@
-import React, { useState ,useEffect } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { mailAction } from "../../../store/MailSlicer";
 import { useNavigate } from "react-router-dom";
 
 import { RxDotFilled } from 'react-icons/rx'
+import {AiFillDelete } from 'react-icons/ai'
 import { IconName } from "react-icons/rx";
 
 const Inbox = () => {
-  let count = 0;
-  const [num, setNum] = useState(count)
   const navigate = useNavigate()
 
   const dispatch = useDispatch();
   const { allMails } = useSelector(state => state.mail);
-  console.log('slice', allMails)
+  // console.log('slice', allMails)
 
   const sum = allMails.map((x) => x.isReaded)
-console.log('count',sum)
 
+  let count = 0;
 sum.forEach(element => {
   if(element !== true){
     count++;
   }
-  console.log(count)
+  // console.log(count)
 });
 
   useEffect(() => {
@@ -60,6 +59,20 @@ sum.forEach(element => {
     // console.log('sum', res)
     getMails();
   }
+
+  const deleteMail = async (id) => {
+    const userEmail = localStorage.getItem('userEmail');
+
+    const res = await fetch(`https://signup-and-authentication-default-rtdb.firebaseio.com/inbox${userEmail.split('@')[0]}/${id}.json`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Content-Type':'application/json'
+      }
+    },
+    )
+    getMails();
+  }
   
     return (
         
@@ -69,13 +82,13 @@ sum.forEach(element => {
        <span>Inbox : {count} Unread </span>
         <div className="m-5">
           {allMails?.map((email) => (
-            
+            <div className='d-flex gap-3'>
             <div
               key={email.id}
               onClick={() => {readHandler(email.id);
                 navigate(`/inbox/${email.id}`)
               }}
-              style={{cursor : 'pointer'}}
+              style={{cursor : 'pointer', width: '90%'}}
               className="shadow p-2 d-flex justify-content-between"
             >
               <div>
@@ -86,8 +99,15 @@ sum.forEach(element => {
               </div>
               <div>
                 <b  className={email.isReaded?'fw-normal m-2' : 'fw-bold m-2'}>{email.subject}</b>
-                <span className=' fw-light px-2'>{email.mail}</span>
+                <span className=' fw-light px-2'> {email.mail}</span>
               </div>
+            </div>
+            <button
+                onClick={() => deleteMail(email.id)}
+                className="btn btn-sm border-danger "
+              >
+                <AiFillDelete />
+              </button>
             </div>
           ))}
         </div>
